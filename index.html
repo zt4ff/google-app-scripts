@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<base target="_top" />
+	<!-- Material CSS -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" />
+	<!-- Alertify.JS -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+	<script src="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.js"></script>
+	<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/alertify.min.css" />
+	<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/themes/default.min.css" />
+	<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/themes/semantic.min.css" />
+	<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/themes/bootstrap.min.css" />
+</head>
+
+<body>
+	<div style="width: 90%; margin: auto; margin-top: 10px">
+		<nav>
+			<div class="nav-wrapper blue">
+				<a href="#" class="brand-logo" style="font-size: 12px">PDF Generator</a>
+			</div>
+		</nav>
+		<div class="row">
+			<p>Enter the row number of the data you want to convert to PDF</p>
+			<form class="col s9">
+				<div class="row">
+					<div class="input-field col s12">
+						<input id="row-number" type="text" class="validate" />
+						<label class="active" for="row_number"
+                >Enter the row number</label>
+					</div>
+				</div>
+				<div class="row">
+					<button
+              class="btn waves-effect waves-light"
+              name="action"
+              id="generate-by-row-number"
+              style="font-size: 8px"
+            >
+              Generate PDF
+            </button>
+					<button
+              class="btn waves-effect waves-light"
+              name="action"
+              id="send-email"
+              style="font-size: 8px"
+            >
+              Send Email
+            </button>
+				</div>
+			</form>
+		</div>
+		<div class="row">
+			<p>
+				If the template document marker i.e
+				<span style="background-color: lightgray">{{placeholder}}</span>
+				changes, click this button to update marker
+			</p>
+			<button
+          id="update-marker"
+          name="action"
+          class="btn waves-effect waves-light"
+          style="font-size: 10px"
+        >
+          Update Marker
+        </button>
+		</div>
+		<hr />
+		<div class="row">
+			<form class="col s9">
+				<p>Current file name <span style="background-color: lightgray; "><?= fileName ?></span> </p>
+				<input id="filename" type="text" class="validate" />
+				<label for="filename"
+                >Input PDF file name here</label>
+			</form>
+			<button
+          id="update-filename"
+          name="action"
+          class="btn waves-effect waves-light"
+          style="font-size: 10px"
+        >
+          Update Marker
+        </button>
+		</div>
+	</div>
+	<script>
+		  const btn = document.getElementById("generate-by-row-number");
+      const input = document.getElementById("row-number");
+      const updateMarker = document.getElementById("update-marker");
+      const updateFilename = document.getElementById("update-filename");
+      const fileNameInput = document.getElementById("filename")
+      const sendEmailButton = document.getElementById("send-email")
+      try {
+        btn.addEventListener("click", async () => {
+          const rowNumber = Number(input.value);
+          if (typeof rowNumber === "number" && rowNumber > 1) {
+            await google.script.run.getPDFFromRowNumber(rowNumber);
+            alertify.success(`PDF generated for row #${rowNumber}`);
+          } else if (rowNumber === 1) {
+            alertify.error("PDF of title can't be created");
+          } else {
+            alertify.error("Input a valid number please");
+          }
+        });
+      
+        updateMarker.addEventListener("click", async () => {
+          await google.script.run.updateMarker();
+          alertify.success("markers updated successfully");
+        });
+
+        updateFilename.addEventListener("click", async () => {
+          if (fileNameInput.value) {
+          await google.script.run.setFileName(fileNameInput.value);
+          alertify.success('File name updated successfully');
+          } else {
+            alertify.error('please enter new name')
+          }
+        })
+
+        sendEmailButton.addEventListener('click', async () => {
+          const rowNumber = Number(input.value);
+          if (typeof rowNumber === "number" && rowNumber > 1) {
+            await google.script.run.sendEmail(rowNumber);
+            alertify.success(`Email sent for row #${rowNumber}`);
+          } else if (rowNumber === 1) {
+            alertify.error("PDF of title can't be created");
+          } else {
+            alertify.error("Input a valid number please");
+          }
+        })
+
+      } catch(error) {
+        alertify.error('Something went wrong. Contact the developer')
+        Logger.log(error)
+      }
+	</script>
+</body>
+
+</html>
